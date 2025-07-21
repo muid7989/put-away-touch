@@ -165,3 +165,6 @@ function mouseReleased() {
 		balls[i].caught = false;
 	}
 }
+function touchMoved() {
+	return false;
+}
