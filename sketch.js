@@ -32,7 +32,7 @@ let startButton;
 let startFlag = false;
 let startTime;
 let endTime = 0;
-let balls;
+let balls = [];
 
 let timeCount;
 const TEXT_VIEW_SIZE = 32;
@@ -48,7 +48,7 @@ function preload() {
 function startFn() {
 	startFlag = true;
 	startTime = millis();
-	startButton.visible = false;
+	startButton.hide();
 	resetFn();
 }
 function setup() {
@@ -60,7 +60,7 @@ function setup() {
 	startButton.mousePressed(startFn);
 	textAlign(CENTER,CENTER);
 
-	resetFn();
+//	resetFn();
 }
 function resetFn() {
 	countValue = 0;
@@ -121,7 +121,7 @@ function draw() {
 					balls[i].visible = false;
 					countValue++;
 					if (countValue>=BALL_NUM){
-						startButton.visible = true;
+						startButton.show();
 						endTime = (millis() - startTime)/1000;
 						startFlag = false;
 					}
