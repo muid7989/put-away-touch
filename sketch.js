@@ -38,6 +38,8 @@ let timeCount;
 const TEXT_VIEW_SIZE = 32;
 let countValue = 0;
 
+let tp = [];
+
 const DEBUG = true;
 const DEBUG_VIEW_X = 40;
 const DEBUG_VIEW_Y = 20;
@@ -147,6 +149,7 @@ function draw() {
 	text('ball:'+balls.length, DEBUG_VIEW_X,debugY);
 	debugY += DEBUG_VIEW_H;
 }
+/*
 function mousePressed() {
 	for (let i=balls.length-1; i>=0; i--){
 		if (balls[i].visible){
@@ -165,6 +168,45 @@ function mouseReleased() {
 		balls[i].caught = false;
 	}
 }
+*/
+function touchStarted() {
+	for (let i=0; i<touches.length;i++) {
+		if (tp[i]==null){
+			tp[i] = [];
+		}
+		tp[i].x = touches[i].x;
+		tp[i].y = touches[i].y;
+	}	
+	for (let i=balls.length-1; i>=0; i--){
+		if (balls[i].visible){
+			const d = dist(tp[0].x, tp[0].y, balls[i].pos.x, balls[i].pos.y);
+			if (d<CATCH_RANGE){
+				balls[i].caught = true;
+				balls[i].offset.x = balls[i].pos.x - tp[0].x;
+				balls[i].offset.y = balls[i].pos.y - tp[0].y;
+				break;
+			}
+		}
+	}
+}
+function touchEnded() {
+	for (let i=0; i<balls.length; i++){
+		balls[i].caught = false;
+	}
+}
 function touchMoved() {
+	for (let i=0; i<touches.length;i++) {
+		if (tp[i]==null){
+			tp[i] = [];
+		}
+		tp[i].x = touches[i].x;
+		tp[i].y = touches[i].y;
+	}	
+	for (let i=0; i<balls.length; i++){
+		if (balls[i].caught){
+			balls[i].pos.x = tp[0].x+balls[i].offset.x;
+			balls[i].pos.y = tp[0].y+balls[i].offset.y;
+		}
+	}
 	return false;
 }
