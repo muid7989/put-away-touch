@@ -12,11 +12,15 @@ const GRID_BASE_Y = GRID_SIZE*1;
 const BALL_NUM = 10;
 const BALL_MIN_X = GRID_SIZE*2;
 const BALL_MIN_Y = GRID_SIZE*2;
-const BALL_MAX_X = GRID_SIZE*13;
+const BALL_MAX_X = GRID_SIZE*12;
 const BALL_MAX_Y = GRID_SIZE*11;
 const BALL_SIZE = GRID_SIZE;
-//const BALL_COLOR = ['red', 'blue', 'yellow'];
-const CATCH_RANGE = 50;
+const BALL_COLOR = 'pink';
+const CATCH_RANGE = 48;
+const TARGET_X = GRID_SIZE*13
+const TARGET_Y = GRID_SIZE*2
+const TARGET_COLOR = 'red';
+const TARGET_SIZE = GRID_SIZE*2;
 
 const BUTTON_F = 8;
 const BUTTON_M = GRID_SIZE;
@@ -42,10 +46,9 @@ const DEBUG_VIEW_H = 20;
 function preload() {
 }
 function startFn() {
-	if (!startFlag){
-		startFlag = true;
-		countValue = 0;
-	}
+	startFlag = true;
+	startTime = millis();
+	startButton.visible = false;
 	resetFn();
 }
 function setup() {
@@ -60,6 +63,7 @@ function setup() {
 	resetFn();
 }
 function resetFn() {
+	countValue = 0;
 	balls = [];
 	for (let i=0; i<BALL_NUM; i++){
 		const tx = random(BALL_MIN_X, BALL_MAX_X);
@@ -67,7 +71,6 @@ function resetFn() {
 		let ball = ballInit(tx, ty);
 		balls.push(ball);
 	}
-	startFlag = false;
 }
 function ballInit(x, y) {
 	let ball = {};
@@ -76,6 +79,7 @@ function ballInit(x, y) {
 	ball.pos.y = y;
 	ball.caught = false;
 	ball.offset = {};
+	ball.visible = true;
 	return ball;
 }
 function buttonInit(text, w, h, x, y) {
@@ -103,47 +107,35 @@ function draw() {
 			line(i*GRID_SIZE, 0, i*GRID_SIZE, CANVAS_H);
 		}
 	}
-	fill(255);
-	stroke(255);
-	textSize(64);
-	textAlign(CENTER);
-	text(countValue, CANVAS_W/2, GRID_SIZE*3);
-
+	strokeWeight(0);
+	fill(TARGET_COLOR);
+	circle(TARGET_X, TARGET_Y, TARGET_SIZE);
+	fill(BALL_COLOR);
 	for (let i=0; i<balls.length; i++){
-		if (balls[i].caught){
-			balls[i].pos.x = mouseX+balls[i].offset.x;
-			balls[i].pos.y = mouseY+balls[i].offset.y;
-		}
-/*
-		if (!balls[i].caught){
-			balls[i].pos.x += balls[i].speed.x;
-			balls[i].pos.y += balls[i].speed.y;
-			balls[i].speed.y += GRAVITY;
-			if (balls[i].pos.y>=CANVAS_H){
-				resetFn();
-				break;
-			}
-			for (let h=0; h<hands.length; h++){
-				if (sqrt((balls[i].pos.x-hands[h].pos.x)*(balls[i].pos.x-hands[h].pos.x)+(balls[i].pos.y-hands[h].pos.y)*(balls[i].pos.y-hands[h].pos.y)) <= CATCH_RANGE){
-					if (hands[h].enable && (hands[h].ball<0)){
-						balls[i].caught = true;
-						hands[h].ball = i;
-						countValue++;
+		if (balls[i].visible){
+			if (balls[i].caught){
+				balls[i].pos.x = mouseX+balls[i].offset.x;
+				balls[i].pos.y = mouseY+balls[i].offset.y;
+				const d = dist(TARGET_X, TARGET_Y, balls[i].pos.x, balls[i].pos.y);
+				if (d<TARGET_SIZE/2){
+					balls[i].visible = false;
+					countValue++;
+					if (countValue>=BALL_NUM){
+						startButton.visible = true;
+						endTime = (millis() - startTime)/1000;
+						startFlag = false;
 					}
 				}
 			}
-		}else{
-			for (let h=0; h<hands.length; h++){
-				if (hands[h].ball==i){
-					balls[i].pos.x = hands[h].pos.x;
-					balls[i].pos.y = hands[h].pos.y;
-				}
-			}
+			circle(balls[i].pos.x, balls[i].pos.y, BALL_SIZE);
 		}
-*/
-		//		fill(BALL_COLOR[i]);
-		fill(200);
-		circle(balls[i].pos.x, balls[i].pos.y, BALL_SIZE);
+	}
+	if (startFlag==false){
+		fill(255);
+		stroke(255);
+		textSize(64);
+		textAlign(CENTER);
+		text(endTime.toFixed(1)+' sec', CANVAS_W/2, GRID_SIZE*2);
 	}
 	fill(255);
 	stroke(255);
@@ -157,12 +149,14 @@ function draw() {
 }
 function mousePressed() {
 	for (let i=balls.length-1; i>=0; i--){
-		const d = dist(mouseX, mouseY, balls[i].pos.x, balls[i].pos.y);
-		if (d<BALL_SIZE/2){
-			balls[i].caught = true;
-			balls[i].offset.x = balls[i].pos.x - mouseX;
-			balls[i].offset.y = balls[i].pos.y - mouseY;
-			break;
+		if (balls[i].visible){
+			const d = dist(mouseX, mouseY, balls[i].pos.x, balls[i].pos.y);
+			if (d<CATCH_RANGE){
+				balls[i].caught = true;
+				balls[i].offset.x = balls[i].pos.x - mouseX;
+				balls[i].offset.y = balls[i].pos.y - mouseY;
+				break;
+			}
 		}
 	}
 }
